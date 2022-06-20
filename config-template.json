@@ -1,0 +1,14 @@
+{
+    "bot_id": 12345,
+    "verify_key": "verify_key",
+    "host": "localhost",
+    "port": 8080,
+    "group_setting": {
+        "12345": {
+            "push": true
+        },
+        "54321": {
+            "push": true
+        }
+    }
+}
