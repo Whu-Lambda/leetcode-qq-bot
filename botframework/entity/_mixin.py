@@ -37,7 +37,7 @@ def dict_factory(items: Iterable[tuple[str, Entity | list | int | str | bool | N
         elif isinstance(value, list):
             result[to_camel_case(name)] = [x.to_json() if isinstance(x, Entity) else x for x in value]
         else:
-            assert isinstance(value, int | str | bool | None)
+            assert isinstance(value, int | str | bool | types.NoneType)
             result[to_camel_case(name)] = value
     return result
 
@@ -60,7 +60,7 @@ class FromJsonWithoutType(ABC):
 
 
 def from_json(cls: Type[T], obj: dict[str, Any]) -> T:
-    return cls(**{field.name: deserialize(field.type, obj[to_camel_case(field.name)])
+    return cls(**{field.name: deserialize(field.type, obj.get(to_camel_case(field.name)))
                   for field in dataclasses.fields(cls)})
 
 
@@ -78,7 +78,7 @@ def deserialize(
         union_types = typing.get_args(annotation)  # (X, Y)
         return deserialize_union(union_types, json_element)
     else:
-        assert annotation is None or issubclass(annotation, int | str | bool)
+        assert issubclass(annotation, int | str | bool | types.NoneType)
         return json_element
 
 
@@ -86,12 +86,10 @@ def deserialize_union(
     union_types: tuple,
     json_element: dict[str, Any] | list | int | str | bool | None
 ) -> Entity | list | int | str | bool | None:
-    def can_deserialize(expected_type: Type[Entity | list | int | str | bool] | None) -> bool:
-        if expected_type is None and json_element is None:
-            return True
-        elif inspect.isclass(expected_type) and issubclass(expected_type, Entity):
+    def can_deserialize(expected_type: Type[Entity | list | int | str | bool | types.NoneType]) -> bool:
+        if inspect.isclass(expected_type) and issubclass(expected_type, Entity):
             return isinstance(json_element, dict) or isinstance(json_element, list)
-        else:  # list, int, str, bool
+        else:  # list, int, str, bool, NoneType
             return expected_type == type(json_element)
 
     return first(deserialize(annotation, json_element)
