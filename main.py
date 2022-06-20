@@ -8,6 +8,7 @@ from typing import Any, Coroutine
 
 sys.path.append(os.path.dirname(__file__))
 import leetcode
+import botframework.exception
 from botframework import MiraiApi, logger
 from botframework.entity import GroupMessage, MessageChain, At, Plain
 from botframework._commons import first
@@ -134,29 +135,32 @@ async def main_async():
             text = extract_text(data.message_chain)
 
             async def handler():
-                if text == 'daily':
-                    await mirai.send_group_message(group_id, await query_en_daily())
-                elif text == '每日一题':
-                    await mirai.send_group_message(group_id, await query_cn_daily())
-                elif text == 'push on':
-                    set_push(group_id, True, config)
-                    await mirai.send_group_message(group_id, '自动推送已开启')
-                elif text == 'push off':
-                    set_push(group_id, False, config)
-                    await mirai.send_group_message(group_id, '自动推送已关闭')
-                # elif text == 'delay':
-                #     await mirai.send_group_message(group_id, 'delay begin')
-                #     await asyncio.sleep(10)
-                #     await mirai.send_group_message(group_id, 'delay end')
-                else:
-                    await mirai.send_group_message(
-                        group_id,
-                        '使用帮助\n'
-                        '@我并发送相应命令：\n'
-                        '- daily：获取 LeetCode 美国站每日一题\n'
-                        '- 每日一题：获取 LeetCode 中国站每日一题\n'
-                        '- push on/off：打开/关闭自动推送'
-                    )
+                try:
+                    if text == 'daily':
+                        await mirai.send_group_message(group_id, await query_en_daily())
+                    elif text == '每日一题':
+                        await mirai.send_group_message(group_id, await query_cn_daily())
+                    elif text == 'push on':
+                        set_push(group_id, True, config)
+                        await mirai.send_group_message(group_id, '自动推送已开启')
+                    elif text == 'push off':
+                        set_push(group_id, False, config)
+                        await mirai.send_group_message(group_id, '自动推送已关闭')
+                    # elif text == 'delay':
+                    #     await mirai.send_group_message(group_id, 'delay begin')
+                    #     await asyncio.sleep(10)
+                    #     await mirai.send_group_message(group_id, 'delay end')
+                    else:
+                        await mirai.send_group_message(
+                            group_id,
+                            '使用帮助\n'
+                            '@我并发送相应命令：\n'
+                            '- daily：获取 LeetCode 美国站每日一题\n'
+                            '- 每日一题：获取 LeetCode 中国站每日一题\n'
+                            '- push on/off：打开/关闭自动推送'
+                        )
+                except botframework.exception.MiraiApiException:
+                    logger.exception()
 
             task = loop.create_task(handler())
             tasks.add(task)
