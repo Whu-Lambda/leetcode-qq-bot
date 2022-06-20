@@ -2,9 +2,11 @@ import asyncio
 import logging
 import json
 import datetime
+import sys
 import os.path
 from typing import Any, Coroutine
 
+sys.path.append(os.path.dirname(__file__))
 import leetcode
 from botframework import MiraiApi, logger
 from botframework.entity import GroupMessage, MessageChain, At, Plain
@@ -75,14 +77,16 @@ async def main_async():
         loop = asyncio.get_running_loop()
 
         async def push_en_daily():
+            daily_message = await query_en_daily()
             for group_id, group_setting in config['group_setting'].items():
                 if group_setting['push']:
-                    await mirai.send_group_message(int(group_id), await query_en_daily())
+                    await mirai.send_group_message(int(group_id), daily_message)
 
         async def push_cn_daily():
+            daily_message = await query_cn_daily()
             for group_id, group_setting in config['group_setting'].items():
                 if group_setting['push']:
-                    await mirai.send_group_message(int(group_id), await query_cn_daily())
+                    await mirai.send_group_message(int(group_id), daily_message)
 
         def do_everyday(time: datetime.time, coro: Coroutine):
             async def actual_coro():
