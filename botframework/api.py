@@ -229,6 +229,7 @@ class MiraiApi:
                 return data
             else:
                 self.__unhandled.append(data)
+            await asyncio.sleep(0)
 
     async def connect(self):
         if self.__ws is not None:

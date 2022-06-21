@@ -146,11 +146,7 @@ async def main_async():
                     elif text == 'push off':
                         set_push(group_id, False, config)
                         await mirai.send_group_message(group_id, '自动推送已关闭')
-                    # elif text == 'delay':
-                    #     await mirai.send_group_message(group_id, 'delay begin')
-                    #     await asyncio.sleep(10)
-                    #     await mirai.send_group_message(group_id, 'delay end')
-                    else:
+                    elif text == '' or text == 'help' or text == '帮助':
                         await mirai.send_group_message(
                             group_id,
                             '使用帮助\n'
@@ -159,6 +155,10 @@ async def main_async():
                             '- 每日一题：获取 LeetCode 中国站每日一题\n'
                             '- push on/off：打开/关闭自动推送'
                         )
+                    # elif text == 'delay':
+                    #     await mirai.send_group_message(group_id, 'delay begin')
+                    #     await asyncio.sleep(10)
+                    #     await mirai.send_group_message(group_id, 'delay end')
                 except botframework.exception.MiraiApiException:
                     logger.exception()
 
