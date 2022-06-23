@@ -25,6 +25,10 @@ en_base_url = 'https://leetcode.com/graphql'
 cn_base_url = 'https://leetcode.cn/graphql'
 
 
+def html2md(html: str) -> str:
+    return markdownify.markdownify(html, bullets='-').replace('\t', '  ')
+
+
 async def en_daily_problem() -> DailyProblem:
     async with aiohttp.ClientSession() as session:
         async with session.post(en_base_url, json={
@@ -48,8 +52,8 @@ async def en_daily_problem() -> DailyProblem:
                 raise NetworkException(response)
             data: dict[str, Any] = (await response.json())['data']
             question: dict[str, Any] = data['activeDailyCodingChallengeQuestion']['question']
-            content = markdownify.markdownify(question['content'])
-            description = re.match(r'([\S\s]+)\*\*Example 1:\*\*', content)[1]
+            content = html2md(question['content'])
+            description = content[:content.find('**Example')]
             description = '\n\n'.join(line.strip() for line in description.split('\n') if len(line.strip()) > 0)
             return DailyProblem(
                 date=datetime.strptime(data['activeDailyCodingChallengeQuestion']['date'], '%Y-%m-%d').date(),
@@ -84,8 +88,8 @@ async def cn_daily_problem() -> DailyProblem:
                 raise NetworkException(response)
             data: dict[str, Any] = (await response.json())['data']
             question: dict[str, Any] = data['todayRecord'][0]['question']
-            content = markdownify.markdownify(question['translatedContent'])
-            description = re.match(r'([\S\s]+)\*\*示例 1：\*\*', content)[1]
+            content = html2md(question['translatedContent'])
+            description = content[:content.find('**示例')]
             description = '\n\n'.join(line.strip() for line in description.split('\n') if len(line.strip()) > 0)
             return DailyProblem(
                 date=datetime.strptime(data['todayRecord'][0]['date'], '%Y-%m-%d').date(),
