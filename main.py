@@ -118,13 +118,19 @@ async def main_async():
             return task
 
         create_everyday_task(
-            datetime.time(0, 5, tzinfo=datetime.timezone(datetime.timedelta(hours=0))),
+            datetime.time(
+                hour=0, minute=0, second=50,
+                tzinfo=datetime.timezone(datetime.timedelta(hours=0))
+            ),
             push_en_daily
-        )  # 00:05 (UTC+00:00)
+        )  # 00:00 (UTC+00:00)
         create_everyday_task(
-            datetime.time(0, 5, tzinfo=datetime.timezone(datetime.timedelta(hours=8))),
+            datetime.time(
+                hour=0, minute=0, second=50,
+                tzinfo=datetime.timezone(datetime.timedelta(hours=8))
+            ),
             push_cn_daily
-        )  # 00:05 (UTC+08:00)
+        )  # 00:00 (UTC+08:00)
 
         async for data in mirai:
             if not isinstance(data, GroupMessage):

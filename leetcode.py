@@ -53,7 +53,10 @@ async def en_daily_problem() -> DailyProblem:
             data: dict[str, Any] = (await response.json())['data']
             question: dict[str, Any] = data['activeDailyCodingChallengeQuestion']['question']
             content = html2md(question['content'])
-            description = content[:content.find('**Example')]
+            if '**Example' in content:
+                description = content[:content.find('**Example')]
+            else:
+                description = content
             description = '\n\n'.join(line.strip() for line in description.split('\n') if len(line.strip()) > 0)
             return DailyProblem(
                 date=datetime.strptime(data['activeDailyCodingChallengeQuestion']['date'], '%Y-%m-%d').date(),
@@ -89,7 +92,10 @@ async def cn_daily_problem() -> DailyProblem:
             data: dict[str, Any] = (await response.json())['data']
             question: dict[str, Any] = data['todayRecord'][0]['question']
             content = html2md(question['translatedContent'])
-            description = content[:content.find('**示例')]
+            if '**示例' in content:
+                description = content[:content.find('**示例')]
+            else:
+                description = content
             description = '\n\n'.join(line.strip() for line in description.split('\n') if len(line.strip()) > 0)
             return DailyProblem(
                 date=datetime.strptime(data['todayRecord'][0]['date'], '%Y-%m-%d').date(),
