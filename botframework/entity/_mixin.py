@@ -68,15 +68,15 @@ def deserialize(
     annotation: Any,
     json_element: dict[str, Any] | list | int | str | bool | None
 ) -> Entity | list | int | str | bool | None:
-    if inspect.isclass(annotation) and issubclass(annotation, Entity):
-        return annotation.from_json(json_element)
-    elif typing.get_origin(annotation) == list:  # list[T] or List[T]
+    if typing.get_origin(annotation) == list:  # list[T] or List[T]
         value_type = typing.get_args(annotation)[0]  # T
         return [deserialize(value_type, x) for x in json_element]
     elif (isinstance(annotation, types.UnionType)
           or typing.get_origin(annotation) == typing.Union):  # X | Y or Union[X, Y]
         union_types = typing.get_args(annotation)  # (X, Y)
         return deserialize_union(union_types, json_element)
+    elif inspect.isclass(annotation) and issubclass(annotation, Entity):  # TODO inspect.isclass(list[T]) will be true
+        return annotation.from_json(json_element)
     else:
         assert issubclass(annotation, int | str | bool | types.NoneType)
         return json_element
