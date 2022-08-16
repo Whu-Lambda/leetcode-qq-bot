@@ -1,5 +1,5 @@
-import re
-from datetime import date, datetime
+import asyncio
+from datetime import date, datetime, timezone, timedelta
 from dataclasses import dataclass
 from typing import Any
 
@@ -29,7 +29,25 @@ def html2md(html: str) -> str:
     return markdownify.markdownify(html, bullets='-').replace('\t', '  ')
 
 
-async def en_daily_problem() -> DailyProblem:
+async def en_daily() -> DailyProblem:
+    today = datetime.now(timezone(timedelta(hours=0))).date()  # UTC+00:00
+    while True:
+        problem = await query_en_daily()
+        if problem.date == today:
+            return problem
+        await asyncio.sleep(5)
+
+
+async def cn_daily() -> DailyProblem:
+    today = datetime.now(timezone(timedelta(hours=8))).date()  # UTC+08:00
+    while True:
+        problem = await query_cn_daily()
+        if problem.date == today:
+            return problem
+        await asyncio.sleep(5)
+
+
+async def query_en_daily() -> DailyProblem:
     async with aiohttp.ClientSession() as session:
         async with session.post(en_base_url, json={
             'operationName': 'questionOfToday',
@@ -68,7 +86,7 @@ async def en_daily_problem() -> DailyProblem:
             )
 
 
-async def cn_daily_problem() -> DailyProblem:
+async def query_cn_daily() -> DailyProblem:
     async with aiohttp.ClientSession() as session:
         async with session.post(cn_base_url, json={
             'operationName': 'questionOfToday',
