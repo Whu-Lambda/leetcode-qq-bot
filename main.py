@@ -14,13 +14,13 @@ async def main():
     controller = LeetCodeController(bot, config)
     bot.add_all(controller.handlers)
     bot.create_everyday_task(
-        time(0, 0, 5, tzinfo=timezone(timedelta(hours=0))),
+        time(0, 0, tzinfo=timezone(timedelta(hours=0))),
         controller.push_en_daily_to_groups
-    )  # push en daily at 00:00:05 (UTC+00:00)
+    )  # push en daily at 00:00 (UTC+0)
     bot.create_everyday_task(
-        time(0, 0, 5, tzinfo=timezone(timedelta(hours=8))),
+        time(0, 0, tzinfo=timezone(timedelta(hours=8))),
         controller.push_cn_daily_to_groups
-    )  # push cn daily at 00:00:05 (UTC+08:00)
+    )  # push cn daily at 00:00 (UTC+8)
     await bot.run()
 
 

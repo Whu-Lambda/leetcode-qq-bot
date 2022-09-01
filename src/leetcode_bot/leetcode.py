@@ -1,5 +1,5 @@
 import asyncio
-from datetime import date, datetime, timezone, timedelta
+from datetime import date, datetime
 from dataclasses import dataclass
 from typing import Any
 
@@ -29,20 +29,22 @@ def html2md(html: str) -> str:
     return markdownify.markdownify(html, bullets='-').replace('\t', '  ')
 
 
-async def en_daily() -> DailyProblem:
-    today = datetime.now(timezone(timedelta(hours=0))).date()  # UTC+00:00
+async def en_daily(expected_date: date | None = None) -> DailyProblem:
+    if expected_date is None:
+        return await query_en_daily()
     while True:
         problem = await query_en_daily()
-        if problem.date == today:
+        if problem.date == expected_date:
             return problem
         await asyncio.sleep(5)
 
 
-async def cn_daily() -> DailyProblem:
-    today = datetime.now(timezone(timedelta(hours=8))).date()  # UTC+08:00
+async def cn_daily(expected_date: date | None = None) -> DailyProblem:
+    if expected_date is None:
+        return await query_cn_daily()
     while True:
         problem = await query_cn_daily()
-        if problem.date == today:
+        if problem.date == expected_date:
             return problem
         await asyncio.sleep(5)
 

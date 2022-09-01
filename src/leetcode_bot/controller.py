@@ -1,3 +1,4 @@
+from datetime import datetime, date, time, timezone, timedelta
 from lightq import filters, resolvers, Bot, message_handler, resolve, Controller, handler_property
 from lightq.entities import GroupMessage, MessageChain, Plain
 from lightq.decorators import regex_fullmatch
@@ -62,21 +63,31 @@ class LeetCodeController(Controller):
         return handler
 
     async def push_en_daily_to_groups(self):
-        message = await self.create_en_daily_message()
+        now = datetime.now(timezone(timedelta(hours=0)))  # UTC+0
+        if now.time() >= time(23, 59, 55):
+            expected_date = now.date() + timedelta(days=1)
+        else:
+            expected_date = now.date()
+        message = await self.create_en_daily_message(expected_date)
         for group in self.config.groups.values():
             if group.push:
                 await self.bot.api.send_group_message(group.id, message)
 
     async def push_cn_daily_to_groups(self):
-        message = await self.create_cn_daily_message()
+        now = datetime.now(timezone(timedelta(hours=8)))  # UTC+8
+        if now.time() >= time(23, 59, 55):
+            expected_date = now.date() + timedelta(days=1)
+        else:
+            expected_date = now.date()
+        message = await self.create_cn_daily_message(expected_date)
         for group in self.config.groups.values():
             if group.push:
                 await self.bot.api.send_group_message(group.id, message)
 
     @staticmethod
-    async def create_en_daily_message() -> str:
+    async def create_en_daily_message(expected_date: date | None = None) -> str:
         try:
-            problem = await leetcode.en_daily()
+            problem = await leetcode.en_daily(expected_date)
             return f'Daily LeetCoding Challenge ({problem.date})\n' \
                    f'{problem.frontend_id}. {problem.title}\n' \
                    f'Difficulty: {problem.difficulty}\n' \
@@ -87,9 +98,9 @@ class LeetCodeController(Controller):
             return 'LeetCode 美国站每日一题获取失败'
 
     @staticmethod
-    async def create_cn_daily_message() -> str:
+    async def create_cn_daily_message(expected_date: date | None = None) -> str:
         try:
-            problem = await leetcode.cn_daily()
+            problem = await leetcode.cn_daily(expected_date)
             return f'力扣每日一题（{problem.date}）\n' \
                    f'{problem.frontend_id}. {problem.title}\n' \
                    f'难度：{problem.difficulty}\n' \
