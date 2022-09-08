@@ -12,7 +12,7 @@ async def main():
     config = Config.from_file(os.path.join(os.path.dirname(__file__), 'config.json'))
     bot = Bot(config.bot_id, config.verify_key, config.base_url)
     controller = LeetCodeController(bot, config)
-    bot.add_all(controller.handlers)
+    bot.add_all(controller.handlers())
     bot.create_everyday_task(
         time(0, 0, tzinfo=timezone(timedelta(hours=0))),
         controller.push_en_daily_to_groups
