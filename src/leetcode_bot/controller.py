@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, date, time, timezone, timedelta
 from lightq import filters, resolvers, Bot, message_handler, resolve, Controller, RecvContext
 from lightq.entities import GroupMessage, MessageChain, Plain
@@ -56,9 +57,10 @@ class LeetCodeController(Controller):
         else:
             expected_date = now.date()
         message = await self.create_en_daily_message(expected_date)
-        for group in self.config.groups.values():
-            if group.push:
-                await self.bot.api.send_group_message(group.id, message)
+        _ = await asyncio.gather(*[
+            self.bot.api.send_group_message(group.id, message)
+            for group in self.config.groups.values() if group.push
+        ], return_exceptions=True)
 
     async def push_cn_daily_to_groups(self):
         now = datetime.now(timezone(timedelta(hours=8)))  # UTC+8
@@ -67,9 +69,10 @@ class LeetCodeController(Controller):
         else:
             expected_date = now.date()
         message = await self.create_cn_daily_message(expected_date)
-        for group in self.config.groups.values():
-            if group.push:
-                await self.bot.api.send_group_message(group.id, message)
+        _ = await asyncio.gather(*[
+            self.bot.api.send_group_message(group.id, message)
+            for group in self.config.groups.values() if group.push
+        ], return_exceptions=True)
 
     @staticmethod
     async def create_en_daily_message(expected_date: date | None = None) -> str:
