@@ -29,19 +29,25 @@ def html2md(html: str) -> str:
     return markdownify.markdownify(html, bullets='-').replace('\t', '  ')
 
 
-async def en_daily(expected_date: date | None = None) -> DailyProblem:
+async def en_daily(
+    expected_date: date | None = None,
+    timeout: float | None = None
+) -> DailyProblem:
     if expected_date is None:
         return await query_en_daily()
     while True:
-        problem = await query_en_daily()
+        problem = await query_en_daily(timeout)
         if problem.date == expected_date:
             return problem
         await asyncio.sleep(5)
 
 
-async def cn_daily(expected_date: date | None = None) -> DailyProblem:
+async def cn_daily(
+    expected_date: date | None = None,
+    timeout: float | None = None
+) -> DailyProblem:
     if expected_date is None:
-        return await query_cn_daily()
+        return await query_cn_daily(timeout)
     while True:
         problem = await query_cn_daily()
         if problem.date == expected_date:
@@ -49,8 +55,8 @@ async def cn_daily(expected_date: date | None = None) -> DailyProblem:
         await asyncio.sleep(5)
 
 
-async def query_en_daily() -> DailyProblem:
-    async with aiohttp.ClientSession() as session:
+async def query_en_daily(timeout: float | None = None) -> DailyProblem:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(timeout)) as session:
         async with session.post(en_base_url, json={
             'operationName': 'questionOfToday',
             'variables': {},
@@ -88,8 +94,8 @@ async def query_en_daily() -> DailyProblem:
             )
 
 
-async def query_cn_daily() -> DailyProblem:
-    async with aiohttp.ClientSession() as session:
+async def query_cn_daily(timeout: float | None = None) -> DailyProblem:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(timeout)) as session:
         async with session.post(cn_base_url, json={
             'operationName': 'questionOfToday',
             'variables': {},
