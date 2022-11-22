@@ -2,8 +2,9 @@ import asyncio
 from datetime import datetime, time, timezone, timedelta
 from typing import Literal
 
-from lightq import filters, resolvers, Bot, message_handler, resolve, Controller, RecvContext
-from lightq.entities import GroupMessage, MessageChain, Plain
+from lightq import filters, resolvers
+from lightq import Bot, message_handler, event_handler, resolve, Controller, RecvContext
+from lightq.entities import GroupMessage, MessageChain, Plain, NudgeEvent
 from lightq.decorators import regex_fullmatch
 
 from . import leetcode
@@ -87,6 +88,14 @@ class LeetCodeController(Controller):
                '- daily：获取 LeetCode 美国站每日一题\n' \
                '- 每日一题：获取 LeetCode 中国站每日一题\n' \
                '- push on/off：打开/关闭自动推送'
+
+    @event_handler(NudgeEvent)
+    async def nudge_response(self, event: NudgeEvent, bot: Bot):
+        """谁拍一拍我，我就拍一拍谁"""
+        if (event.subject.kind == 'Group'
+            and event.target == bot.bot_id
+            and event.from_id != bot.bot_id):
+            await bot.api.send_nudge(event.from_id, event.subject.id, 'Group')
 
     async def push_en_daily_to_groups(self):
         await self.__push_daily_to_groups('en')
